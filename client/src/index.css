@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  * {
+    @apply border-slate-700;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body, #root {
+    @apply h-full w-full overflow-hidden bg-surface-950;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-600;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-accent/30 text-white;
+  }
+
+  /* Focus ring */
+  :focus-visible {
+    @apply outline-2 outline-accent outline-offset-2;
+  }
+
+  /* Smooth transitions */
+  button, a, input, textarea, select {
+    @apply transition-colors duration-150;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium text-sm
+           bg-surface-800 text-slate-300
+           hover:bg-surface-700 hover:text-white
+           active:scale-[0.98]
+           disabled:opacity-50 disabled:cursor-not-allowed
+           flex items-center gap-2;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-white
+           hover:bg-accent-dark
+           active:scale-[0.98];
+  }
+
+  .btn-danger {
+    @apply bg-red-600/20 text-red-400
+           hover:bg-red-600/30 hover:text-red-300;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-slate-400
+           hover:bg-surface-800 hover:text-white;
+  }
+
+  .input {
+    @apply w-full bg-surface-800/50 border border-surface-700
+           rounded-xl px-4 py-3 text-sm
+           text-slate-100 placeholder:text-slate-500
+           focus:border-accent/50 focus:ring-1 focus:ring-accent/20
+           focus:outline-none
+           resize-none;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg
+           text-sm text-slate-400 hover:text-white hover:bg-surface-800/60
+           cursor-pointer transition-all duration-100
+           group relative;
+  }
+
+  .sidebar-item.active {
+    @apply bg-accent/10 text-accent-light;
+  }
+
+  .sidebar-item:hover .sidebar-delete {
+    @apply opacity-100;
+  }
+
+  .message-bubble {
+    @apply rounded-2xl px-4 py-3 max-w-[85%] animate-fade-in;
+  }
+
+  .message-user {
+    @apply bg-accent/20 border border-accent/10 ml-auto rounded-br-md;
+  }
+
+  .message-assistant {
+    @apply bg-surface-800/80 border border-surface-700/50 mr-auto rounded-bl-md;
+  }
+
+  .message-tool {
+    @apply bg-surface-900/50 border border-surface-800 mx-auto rounded-xl max-w-[90%];
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
