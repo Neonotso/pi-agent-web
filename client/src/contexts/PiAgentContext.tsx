@@ -9,9 +9,10 @@ export interface Session {
 
 interface PiAgentContextValue {
   isConnected: boolean;
+  hasReadySession: boolean;
   sessions: Session[];
   activeSessionId: string | null;
-  messages: Map<string, ChatMessage[]>;  // sessionId → messages
+  messages: ChatMessage[];  // Active session's messages
   sendMessage: (text: string) => void;
   abort: () => void;
   createSession: (name?: string) => void;
@@ -37,6 +38,7 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Map<string, ChatMessage[]>>(new Map());
+  const [hasReadySession, setHasReadySession] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const pendingRef = useRef<Record<string, string>>({});  // sessionId → streaming text
   const idCounterRef = useRef(0);
@@ -79,6 +81,7 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
             return next;
           });
           setActiveSessionId(data.sessionId);
+          setHasReadySession(true);
         }
         break;
 
@@ -212,8 +215,13 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
   }, [activeSessionId]);
 
   const sendMessage = useCallback((text: string) => {
+    if (!hasReadySession || !activeSessionId) {
+      console.log('[Context] No ready session, buffering:', text.slice(0, 40));
+      return;
+    }
     const ws = wsRef.current;
-    if (!ws || ws.readyState !== WebSocket.OPEN || !activeSessionId) return;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`, role: 'user', content: text, timestamp: Date.now(),
     };
@@ -275,7 +283,7 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
     deleteSession,
     renameSession,
   }), [isConnected, sessions, activeSessionId, getActiveMessages(messages, activeSessionId),
-    sendMessage, abort, createSession, switchSession, deleteSession, renameSession]);
+    hasReadySession, sendMessage, abort, createSession, switchSession, deleteSession, renameSession]);
 
   return (
     <PiAgentContext.Provider value={contextValue}>

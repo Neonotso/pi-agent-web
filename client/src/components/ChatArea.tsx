@@ -6,7 +6,7 @@ export default function ChatArea() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
-  const { isConnected, messages, sendMessage, createSession, abort } = usePiAgent();
+  const { isConnected, messages, sendMessage, createSession, abort, hasReadySession } = usePiAgent();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
