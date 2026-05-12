@@ -39,6 +39,8 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
   const wsRef = useRef<WebSocket | null>(null);
   const pendingStreamingRef = useRef<string>('');
   const streamingMsgIdRef = useRef<string>('');
+  const pendingMessagesRef = useRef<Array<{ text: string; options?: any }>>([]);
+  const hasConnectedRef = useRef(false);
 
   // Connect to WebSocket
   useEffect(() => {
@@ -81,6 +83,21 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
     switch (data.type) {
       case 'connected':
         setCurrentSessionId(data.sessionId);
+        hasConnectedRef.current = true;
+        setIsConnected(true);
+        // Flush any pending messages that arrived before session was ready
+        const pending = pendingMessagesRef.current.splice(0);
+        for (const { text, options } of pending) {
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(
+              JSON.stringify({
+                type: 'prompt',
+                message: text,
+                streamingBehavior: options?.streamingBehavior,
+              })
+            );
+          }
+        }
         break;
 
       case 'session_created':
@@ -236,9 +253,22 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
 
   const sendMessage = useCallback(
     (text: string, options?: { streamingBehavior?: 'steer' | 'followUp' }) => {
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        // Buffer message if not connected yet
+        console.log('[Context] Connection not ready, buffering message');
+        pendingMessagesRef.current.push({ text, options });
+        return;
+      }
 
-      wsRef.current.send(
+      if (!hasConnectedRef.current) {
+        // Haven't received 'connected' event yet, buffer it
+        console.log('[Context] Session not ready, buffering message');
+        pendingMessagesRef.current.push({ text, options });
+        return;
+      }
+
+      ws.send(
         JSON.stringify({
           type: 'prompt',
           message: text,

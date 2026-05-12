@@ -83,7 +83,17 @@ function restartSession(id: string) {
   if (!old) return;
   old.proc.kill();
   const name = old.name;
-  sessions.set(id, createSession(name));
+  // Clear currentSessionId on all clients before restarting
+  for (const client of old.connectedClients) {
+    (client as any).currentSessionId = null;
+  }
+  const newSession = createSession(name);
+  // Update currentSessionId on remaining clients
+  for (const client of newSession.connectedClients) {
+    (client as any).currentSessionId = newSession.id;
+  }
+  // Replace in map
+  sessions.set(id, newSession);
 }
 
 function broadcastToSession(id: string, data: Record<string, unknown>) {
@@ -167,17 +177,18 @@ const wss = new WebSocketServer({ server });
 wss.on("connection", (ws) => {
   console.log("[WS] Client connected");
 
-  // Create or join a session
-  let sessionId: string | null = null;
+  // Create a fresh session for this connection
   const session = createSession();
-  sessionId = session.id;
   session.connectedClients.add(ws);
+
+  // Attach session to ws object for reliable per-client tracking
+  (ws as any).currentSessionId = session.id;
 
   // Send session info
   ws.send(
     JSON.stringify({
       type: "connected",
-      sessionId,
+      sessionId: session.id,
       sessionCount: sessions.size,
     })
   );
@@ -186,19 +197,26 @@ wss.on("connection", (ws) => {
   ws.on("message", (data: Buffer) => {
     try {
       const msg = JSON.parse(data.toString());
-      handleClientMessage(ws, sessionId!, msg);
+      const sid = (ws as any).currentSessionId;
+      console.log("[WS] Message to session:", sid, "type:", (msg as any).type);
+      handleClientMessage(ws, sid, msg);
     } catch (err) {
       console.error("[WS] Parse error:", err);
     }
   });
 
   ws.on("close", () => {
-    console.log("[WS] Client disconnected");
-    session.connectedClients.delete(ws);
-    // If no more clients, kill the session
-    if (session.connectedClients.size === 0) {
-      session.proc.kill();
-      sessions.delete(sessionId!);
+    const sid = (ws as any).currentSessionId;
+    console.log("[WS] Client disconnected, session:", sid);
+    // Remove from connected clients
+    for (const [, s] of sessions) {
+      s.connectedClients.delete(ws);
+    }
+    // If this session has no more clients, kill it
+    const targetSession = sid ? sessions.get(sid) : null;
+    if (targetSession && targetSession.connectedClients.size === 0) {
+      targetSession.proc.kill();
+      sessions.delete(sid);
     }
   });
 
@@ -208,11 +226,22 @@ wss.on("connection", (ws) => {
 });
 
 function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<string, unknown>) {
+  // Always use the current sessionId from the ws object
+  const sid = (ws as any).currentSessionId || sessionId;
+
+  console.log("[WS] Handling", (msg as any).type, "for session", sid);
+
+  if (!sessions.has(sid)) {
+    console.error(`[Session] No session: ${sid}`);
+    ws.send(JSON.stringify({ type: "error", data: `Session ${sid} not found. Reconnect to create a new one.` }));
+    return;
+  }
+
   const type = msg.type as string;
 
   switch (type) {
     case "prompt":
-      sendToSession(sessionId, {
+      sendToSession(sid, {
         type: "prompt",
         message: msg.message as string,
         streamingBehavior: (msg.streamingBehavior as "steer" | "followUp") || undefined,
@@ -220,42 +249,42 @@ function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<strin
       break;
 
     case "abort":
-      sendToSession(sessionId, { type: "abort" });
+      sendToSession(sid, { type: "abort" });
       break;
 
     case "new_session": {
       // Close current, start new
-      const oldSession = sessions.get(sessionId);
+      const oldSession = sessions.get(sid);
       if (oldSession) {
         oldSession.proc.kill();
-        sessions.delete(sessionId);
+        sessions.delete(sid);
       }
+      (ws as any).currentSessionId = null; // Clear until new session is created
       const newSession = createSession("New Chat");
-      sessionId = newSession.id;
+      (ws as any).currentSessionId = newSession.id;
       ws.send(
         JSON.stringify({
           type: "session_created",
           sessionId: newSession.id,
-          oldSessionId: sessionId,
         })
       );
       break;
     }
 
     case "get_state":
-      sendToSession(sessionId, { type: "get_state" });
+      sendToSession(sid, { type: "get_state" });
       break;
 
     case "get_messages":
-      sendToSession(sessionId, { type: "get_messages" });
+      sendToSession(sid, { type: "get_messages" });
       break;
 
     case "get_session_stats":
-      sendToSession(sessionId, { type: "get_session_stats" });
+      sendToSession(sid, { type: "get_session_stats" });
       break;
 
     case "compact":
-      sendToSession(sessionId, {
+      sendToSession(sid, {
         type: "compact",
         ...(msg.customInstructions && { customInstructions: msg.customInstructions }),
       });
@@ -265,13 +294,8 @@ function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<strin
       const targetId = msg.targetSessionId as string;
       const targetSession = sessions.get(targetId);
       if (targetSession) {
-        // Leave current session
-        const current = sessions.get(sessionId);
-        if (current) current.connectedClients.delete(ws);
-
-        // Join target
         targetSession.connectedClients.add(ws);
-        sessionId = targetId;
+        (ws as any).currentSessionId = targetId;
 
         ws.send(
           JSON.stringify({
@@ -296,12 +320,12 @@ function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<strin
           })
         );
         // If we were in the deleted session, switch to another
-        if (sessionId === deleteId) {
+        if (sid === deleteId) {
           const remaining = Array.from(sessions.entries());
           if (remaining.length > 0) {
             const [newId] = remaining[0];
-            sessions.get(newId)?.connectedClients.add(ws);
-            sessionId = newId;
+            remaining[0][1].connectedClients.add(ws);
+            (ws as any).currentSessionId = newId;
           }
         }
       }
@@ -310,8 +334,7 @@ function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<strin
 
     default:
       // Forward unknown commands to Pi
-      console.log(`[WS] Forwarding: ${type}`);
-      sendToSession(sessionId, msg);
+      sendToSession(sid, msg);
   }
 }
 
