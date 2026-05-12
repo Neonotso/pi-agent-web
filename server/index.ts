@@ -183,6 +183,7 @@ wss.on("connection", (ws) => {
 
   // Attach session to ws object for reliable per-client tracking
   (ws as any).currentSessionId = session.id;
+  console.log("[WS] Set currentSessionId:", session.id, "for ws", (ws as any).__id);
 
   // Send session info
   ws.send(
@@ -198,8 +199,8 @@ wss.on("connection", (ws) => {
     try {
       const msg = JSON.parse(data.toString());
       const sid = (ws as any).currentSessionId;
-      console.log("[WS] Message to session:", sid, "type:", (msg as any).type);
-      handleClientMessage(ws, sid, msg);
+      console.log("[WS] MSG: ws.currentSessionId =", sid, "keys:", Object.keys(ws as any).filter(k => !k.startsWith('_')), "readyState:", ws.readyState, "type:", (msg as any).type);
+      handleClientMessage(ws, sid as string, msg);
     } catch (err) {
       console.error("[WS] Parse error:", err);
     }
