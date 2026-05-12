@@ -67,15 +67,18 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
         break;
 
       case 'connected':
-        // First session for this connection
-        if (data.sessionId && !sessions.find(s => s.id === data.sessionId)) {
-          const session = { id: data.sessionId, name: 'New Chat', createdAt: Date.now() };
-          setSessions(prev => [...prev, session]);
+        // First session for this connection — activate it
+        if (data.sessionId) {
+          setSessions(prev => {
+            if (prev.find(s => s.id === data.sessionId)) return prev;
+            return [...prev, { id: data.sessionId, name: 'New Chat', createdAt: Date.now() }];
+          });
           setMessages(prev => {
             const next = new Map(prev);
             if (!next.has(data.sessionId)) next.set(data.sessionId, []);
             return next;
           });
+          setActiveSessionId(data.sessionId);
         }
         break;
 
@@ -211,8 +214,6 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
   const sendMessage = useCallback((text: string) => {
     const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN || !activeSessionId) return;
-
-    // Add user message locally
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`, role: 'user', content: text, timestamp: Date.now(),
     };
