@@ -198,31 +198,28 @@ wss.on("connection", (ws) => {
   ws.on("message", (data: Buffer) => {
     try {
       const msg = JSON.parse(data.toString());
-      // Always use session from ws object as primary, message as fallback
-      let sid = (ws as any).currentSessionId;
       const msgSessionId = (msg as any).sessionId;
 
-      // If ws object has no session but message has one, use it
-      if (!sid && msgSessionId && sessions.has(msgSessionId)) {
-        sid = msgSessionId;
+      // Ensure session exists - use existing or create new
+      let sid = (ws as any).currentSessionId;
+      if (!sid || !sessions.has(sid)) {
+        if (msgSessionId && sessions.has(msgSessionId)) {
+          sid = msgSessionId;
+          (ws as any).currentSessionId = sid;
+        } else {
+          const session = createSession("New Chat");
+          session.connectedClients.add(ws);
+          (ws as any).currentSessionId = session.id;
+          sid = session.id;
+          ws.send(JSON.stringify({
+            type: "connected",
+            sessionId: sid,
+            sessionCount: sessions.size,
+          }));
+        }
       }
 
-      // If still no session, create one
-      if (!sid) {
-        console.log("[WS] No session for ws, creating new session for this client");
-        const session = createSession("New Chat");
-        session.connectedClients.add(ws);
-        (ws as any).currentSessionId = session.id;
-        sid = session.id;
-        // Send the session info to the client
-        ws.send(JSON.stringify({
-          type: "connected",
-          sessionId: sid,
-          sessionCount: sessions.size,
-        }));
-      }
-
-      console.log("[WS] MSG: session =", sid, "type:", (msg as any).type);
+      console.log("[WS] Handling message for session:", sid, "type:", (msg as any).type);
       handleClientMessage(ws, sid, msg);
     } catch (err) {
       console.error("[WS] Parse error:", err);
@@ -249,10 +246,7 @@ wss.on("connection", (ws) => {
   });
 });
 
-function handleClientMessage(ws: WebSocket, sessionId: string, msg: Record<string, unknown>) {
-  // Always use the current sessionId from the ws object
-  const sid = (ws as any).currentSessionId || sessionId;
-
+function handleClientMessage(ws: WebSocket, sid: string, msg: Record<string, unknown>) {
   console.log("[WS] Handling", (msg as any).type, "for session", sid);
 
   if (!sessions.has(sid)) {
