@@ -261,22 +261,16 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (!hasConnectedRef.current) {
-        // Haven't received 'connected' event yet, buffer it
-        console.log('[Context] Session not ready, buffering message');
-        pendingMessagesRef.current.push({ text, options });
-        return;
-      }
-
       ws.send(
         JSON.stringify({
           type: 'prompt',
+          sessionId: currentSessionId,
           message: text,
           streamingBehavior: options?.streamingBehavior,
         })
       );
     },
-    []
+    [currentSessionId]
   );
 
   const abort = useCallback(() => {
@@ -292,23 +286,24 @@ export function PiAgentProvider({ children }: { children: React.ReactNode }) {
 
   const switchSession = useCallback((sessionId: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    wsRef.current.send(JSON.stringify({ type: 'switch_session', targetSessionId: sessionId }));
-  }, []);
+    wsRef.current.send(JSON.stringify({ type: 'switch_session', targetSessionId: sessionId, sessionId: currentSessionId }));
+  }, [currentSessionId]);
 
   const deleteSession = useCallback((sessionId: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    wsRef.current.send(JSON.stringify({ type: 'delete_session', sessionId }));
-  }, []);
+    wsRef.current.send(JSON.stringify({ type: 'delete_session', sessionId, currentSessionId }));
+  }, [currentSessionId]);
 
   const compact = useCallback((instructions?: string) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     wsRef.current.send(
       JSON.stringify({
         type: 'compact',
+        sessionId: currentSessionId,
         customInstructions: instructions,
       })
     );
-  }, []);
+  }, [currentSessionId]);
 
   return (
     <PiAgentContext.Provider

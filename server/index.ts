@@ -198,9 +198,32 @@ wss.on("connection", (ws) => {
   ws.on("message", (data: Buffer) => {
     try {
       const msg = JSON.parse(data.toString());
-      const sid = (ws as any).currentSessionId;
-      console.log("[WS] MSG: ws.currentSessionId =", sid, "keys:", Object.keys(ws as any).filter(k => !k.startsWith('_')), "readyState:", ws.readyState, "type:", (msg as any).type);
-      handleClientMessage(ws, sid as string, msg);
+      // Always use session from ws object as primary, message as fallback
+      let sid = (ws as any).currentSessionId;
+      const msgSessionId = (msg as any).sessionId;
+
+      // If ws object has no session but message has one, use it
+      if (!sid && msgSessionId && sessions.has(msgSessionId)) {
+        sid = msgSessionId;
+      }
+
+      // If still no session, create one
+      if (!sid) {
+        console.log("[WS] No session for ws, creating new session for this client");
+        const session = createSession("New Chat");
+        session.connectedClients.add(ws);
+        (ws as any).currentSessionId = session.id;
+        sid = session.id;
+        // Send the session info to the client
+        ws.send(JSON.stringify({
+          type: "connected",
+          sessionId: sid,
+          sessionCount: sessions.size,
+        }));
+      }
+
+      console.log("[WS] MSG: session =", sid, "type:", (msg as any).type);
+      handleClientMessage(ws, sid, msg);
     } catch (err) {
       console.error("[WS] Parse error:", err);
     }
