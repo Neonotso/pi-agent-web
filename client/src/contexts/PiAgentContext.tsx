@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import type { PiEvent, ChatMessage } from './types';
+import type { PiEvent, ChatMessage } from '../types';
 
 interface PiAgentContextValue {
   isConnected: boolean;
