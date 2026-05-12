@@ -83,8 +83,7 @@
   .sidebar-item {
     @apply flex items-center gap-3 px-3 py-2 rounded-lg
            text-sm text-slate-400 hover:text-white hover:bg-surface-800/60
-           cursor-pointer transition-all duration-100
-           group relative;
+           cursor-pointer transition-all duration-100;
   }
 
   .sidebar-item.active {
