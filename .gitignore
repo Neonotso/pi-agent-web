@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+
+# logs
+*.log
+logs/
+
+# environment
+.env
+.env.local
+.env.production
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# songselect cookies (contains auth data)
+tools/songselect/cookies.json
+
+# data files
+data/
+
+# large generated files
+*.vtt
