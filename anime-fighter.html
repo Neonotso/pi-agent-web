@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Anime Fighter 3D</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #111; font-family: 'Segoe UI', sans-serif; }
+    canvas { display: block; }
+
+    /* HUD */
+    #hud {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 10; user-select: none;
+    }
+    .health-container {
+      position: absolute; top: 30px; width: 40%; height: 30px;
+      background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 6px; overflow: hidden;
+    }
+    #p1-health { left: 5%; }
+    #p2-health { right: 5%; }
+    .health-bar {
+      height: 100%; transition: width 0.15s;
+      border-radius: 4px;
+    }
+    #p1-health-bar { background: #22cc44; width: 100%; }
+    #p2-health-bar { background: #cc2244; width: 100%; margin-left: auto; }
+
+    .health-label {
+      position: absolute; top: 65px; font-size: 18px; font-weight: bold;
+      color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    }
+    #p1-label { left: 5%; }
+    #p2-label { right: 5%; }
+
+    .energy-container {
+      position: absolute; top: 85px; width: 35%; height: 8px;
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px; overflow: hidden;
+    }
+    #p1-energy { left: 5%; }
+    #p2-energy { right: 5%; }
+    .energy-bar {
+      height: 100%; transition: width 0.1s;
+      border-radius: 3px;
+    }
+    #p1-energy-bar { background: #4488ff; width: 100%; }
+    #p2-energy-bar { background: #ff8844; width: 100%; margin-left: auto; }
+
+    #timer {
+      position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
+      font-size: 36px; font-weight: bold; color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    }
+
+    #controls-info {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      color: rgba(255,255,255,0.35); font-size: 13px; text-align: center;
+      pointer-events: none;
+    }
+
+    /* Overlays */
+    #overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 20; color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.9);
+      transition: opacity 0.5s;
+      pointer-events: auto;
+    }
+    #start-screen { background: rgba(0,0,0,0.6); }
+    #start-screen h1 { font-size: 56px; margin-bottom: 5px; letter-spacing: 2px; }
+    #start-screen h1 span.goku { color: #22cc44; }
+    #start-screen h1 span.vegeta { color: #cc2244; }
+    #start-screen p { font-size: 18px; opacity: 0.8; margin: 4px 0; }
+    #start-screen .keys {
+      margin-top: 20px; font-size: 16px; opacity: 0.6;
+    }
+
+    #ko-screen { display: none; background: rgba(0,0,0,0.7); }
+    #ko-screen h1 { font-size: 64px; margin-bottom: 5px; }
+    #ko-screen p { font-size: 24px; margin: 4px 0; }
+    #ko-screen .restart-btn {
+      margin-top: 20px; padding: 14px 50px; font-size: 22px;
+      background: #ff6b6b; color: #fff; border: none; border-radius: 10px;
+      cursor: pointer; pointer-events: auto; transition: background 0.2s;
+    }
+    #ko-screen .restart-btn:hover { background: #ff4040; }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div class="health-container" id="p1-health">
+      <div class="health-bar" id="p1-health-bar"></div>
+    </div>
+    <div class="health-container" id="p2-health">
+      <div class="health-bar" id="p2-health-bar"></div>
+    </div>
+    <div class="health-label" id="p1-label">GOKU</div>
+    <div class="health-label" id="p2-label">VEGETA</div>
+    <div class="energy-container" id="p1-energy">
+      <div class="energy-bar" id="p1-energy-bar"></div>
+    </div>
+    <div class="energy-container" id="p2-energy">
+      <div class="energy-bar" id="p2-energy-bar"></div>
+    </div>
+    <div id="timer">99</div>
+    <div id="controls-info">P1: A/D=Move W=Jump J=Punch K=Kick L=Special &nbsp;|&nbsp; P2: ←/→=Move ↑=Jump 1=Punch 2=Kick 3=Special</div>
+  </div>
+
+  <div id="overlay" id="start-screen">
+    <h1><span class="goku">GOKU</span> VS <span class="vegeta">VEGETA</span></h1>
+    <p>3D Anime Fighter</p>
+    <p class="keys">Press SPACE or ENTER to start</p>
+  </div>
+
+  <div id="ko-screen">
+    <h1 id="ko-title">K.O.!</h1>
+    <p id="ko-winner">Winner: Goku</p>
+    <button class="restart-btn" onclick="restart()">Rematch!</button>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // ─── SCENE ───
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 50);
+    camera.position.set(0, 3.2, 9);
+    camera.lookAt(0, 1.3, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    document.body.prepend(renderer.domElement);
+
+    // ─── LIGHTS ───
+    const ambient = new THREE.AmbientLight(0x404060, 0.4);
+    scene.add(ambient);
+
+    const mainLight = new THREE.DirectionalLight(0xffeedd, 1.8);
+    mainLight.position.set(5, 10, 8);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 1024;
+    mainLight.shadow.mapSize.height = 1024;
+    const d = 8;
+    mainLight.shadow.camera.left = -d;
+    mainLight.shadow.camera.right = d;
+    mainLight.shadow.camera.top = d;
+    mainLight.shadow.camera.bottom = -d;
+    scene.add(mainLight);
+
+    const fill = new THREE.DirectionalLight(0x4488ff, 0.3);
+    fill.position.set(-5, 2, 6);
+    scene.add(fill);
+
+    const rim = new THREE.DirectionalLight(0xff8844, 0.3);
+    rim.position.set(-3, 1, -6);
+    scene.add(rim);
+
+    // ─── ARENA ───
+    const arenaMat = new THREE.MeshToonMaterial({ color: 0x88cc66 });
+    const arena = new THREE.Mesh(new THREE.BoxGeometry(12, 0.3, 5), arenaMat);
+    arena.position.y = -0.15;
+    arena.receiveShadow = true;
+    arena.castShadow = true;
+    scene.add(arena);
+
+    // Arena border
+    const borderMat = new THREE.MeshToonMaterial({ color: 0x664422 });
+    for (let x of [-6, 6]) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 5.2), borderMat);
+      b.position.set(x, 0.1, 0);
+      scene.add(b);
+    }
+    for (let z of [-2.6, 2.6]) {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(12.2, 0.5, 0.2), borderMat);
+      b.position.set(0, 0.1, z);
+      scene.add(b);
+    }
+
+    // Floor grid lines
+    for (let i = -5; i <= 5; i += 1) {
+      const line = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.01, 5),
+        new THREE.MeshToonMaterial({ color: 0x55aa33, transparent: true, opacity: 0.3 })
+      );
+      line.position.set(i, 0, 0);
+      scene.add(line);
+    }
+
+    // Arena pillars (decorative)
+    for (let x of [-5.5, 5.5]) {
+      for (let z of [-2.2, 2.2]) {
+        const pillar = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.15, 0.2, 1.5, 8),
+          new THREE.MeshToonMaterial({ color: 0x887766 })
+        );
+        pillar.position.set(x, 0.75, z);
+        pillar.castShadow = true;
+        scene.add(pillar);
+      }
+    }
+
+    // ─── FIGHTER BUILDER ───
+    function createFighter(bodyColor, skinColor, hairColor, hairSpikes, accessories) {
+      const group = new THREE.Group();
+
+      // Body
+      const bodyMat = new THREE.MeshToonMaterial({ color: bodyColor });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.3), bodyMat);
+      body.position.y = 0.35;
+      body.castShadow = true;
+      group.add(body);
+
+      // Chest detail
+      const chest = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 0.3, 0.15),
+        new THREE.MeshToonMaterial({ color: skinColor })
+      );
+      chest.position.set(0, 0.6, 0.15);
+      group.add(chest);
+
+      // Head
+      const headMat = new THREE.MeshToonMaterial({ color: skinColor });
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), headMat);
+      head.position.y = 0.95;
+      head.castShadow = true;
+      group.add(head);
+
+      // Face features
+      const eyeMat = new THREE.MeshToonMaterial({ color: 0xffffff });
+      const pupilMat = new THREE.MeshToonMaterial({ color: 0x222222 });
+      for (let side of [-1, 1]) {
+        const eye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+        eye.position.set(side * 0.1, 1.0, 0.25);
+        group.add(eye);
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), pupilMat);
+        pupil.position.set(side * 0.12, 1.0, 0.30);
+        group.add(pupil);
+      }
+
+      // Mouth - small cylinder
+      const mouth = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.02, 0.04),
+        new THREE.MeshToonMaterial({ color: 0xcc6666 })
+      );
+      mouth.position.set(0, 0.92, 0.26);
+      group.add(mouth);
+
+      // Hair
+      const hairMat = new THREE.MeshToonMaterial({ color: hairColor });
+      for (const spike of hairSpikes) {
+        const h = new THREE.Mesh(new THREE.ConeGeometry(spike.r, spike.h, 6), hairMat);
+        h.position.set(spike.x, spike.y, spike.z);
+        h.rotation.set(spike.rx || 0, spike.ry || 0, spike.rz || 0);
+        group.add(h);
+      }
+
+      // Arms
+      const armMat = new THREE.MeshToonMaterial({ color: skinColor });
+      const armW = 0.08, armH = 0.35;
+      for (let side of [-1, 1]) {
+        const arm = new THREE.Mesh(
+          new THREE.CylinderGeometry(armW, armW * 1.1, armH, 8),
+          armMat
+        );
+        arm.position.set(side * 0.5, 0.55, 0);
+        arm.rotation.z = side * 0.2;
+        arm.name = `arm_${side}`;
+        arm.castShadow = true;
+        group.add(arm);
+
+        // Fist
+        const fist = new THREE.Mesh(
+          new THREE.SphereGeometry(0.07, 8, 8),
+          new THREE.MeshToonMaterial({ color: skinColor })
+        );
+        fist.position.set(side * 0.5, 0.2, 0);
+        fist.name = `fist_${side}`;
+        group.add(fist);
+      }
+
+      // Legs
+      const legMat = new THREE.MeshToonMaterial({ color: bodyColor });
+      for (let side of [-1, 1]) {
+        const leg = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.09, 0.1, 0.35, 8),
+          legMat
+        );
+        leg.position.set(side * 0.18, -0.05, 0);
+        leg.castShadow = true;
+        group.add(leg);
+
+        // Foot
+        const foot = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 0.06, 0.18),
+          new THREE.MeshToonMaterial({ color: 0x664444 })
+        );
+        foot.position.set(side * 0.18, -0.25, 0.05);
+        group.add(foot);
+      }
+
+      // Belt/accessories
+      if (accessories) {
+        for (const acc of accessories) {
+          const mat = new THREE.MeshToonMaterial({ color: acc.color });
+          const m = new THREE.Mesh(new THREE.BoxGeometry(acc.w, acc.h, acc.d), mat);
+          m.position.set(acc.x, acc.y, acc.z);
+          group.add(m);
+        }
+      }
+
+      return group;
+    }
+
+    // ─── GOKU ───
+    const gokuHair = [
+      { x: 0, y: 1.15, z: 0, r: 0.1, h: 0.2 },
+      { x: 0.08, y: 1.2, z: -0.05, r: 0.08, h: 0.18 },
+      { x: -0.08, y: 1.2, z: -0.05, r: 0.08, h: 0.18 },
+      { x: 0, y: 1.25, z: 0.05, r: 0.06, h: 0.15 },
+      { x: 0.1, y: 1.22, z: 0.08, r: 0.05, h: 0.12 },
+      { x: -0.1, y: 1.22, z: 0.08, r: 0.05, h: 0.12 },
+    ];
+    const gokuAcc = [
+      { color: 0x2255cc, w: 0.1, h: 0.04, d: 0.25, x: 0, y: 0.15, z: 0 },
+      { color: 0x2255cc, w: 0.3, h: 0.03, d: 0.05, x: 0, y: 0.25, z: 0 },
+    ];
+
+    // ─── VEGETA ───
+    const vegetaHair = [
+      { x: 0, y: 1.18, z: 0, r: 0.09, h: 0.22 },
+      { x: 0.07, y: 1.25, z: -0.04, r: 0.07, h: 0.2 },
+      { x: -0.07, y: 1.25, z: -0.04, r: 0.07, h: 0.2 },
+      { x: 0, y: 1.3, z: 0.06, r: 0.05, h: 0.16 },
+      { x: 0.09, y: 1.28, z: 0.07, r: 0.04, h: 0.13 },
+      { x: -0.09, y: 1.28, z: 0.07, r: 0.04, h: 0.13 },
+      // Side spikes (Vegeta has widers hair)
+      { x: 0.15, y: 1.1, z: 0, r: 0.05, h: 0.1, rx: 0, ry: 0, rz: -0.3 },
+      { x: -0.15, y: 1.1, z: 0, r: 0.05, h: 0.1, rx: 0, ry: 0, rz: 0.3 },
+    ];
+    const vegetaAcc = [
+      { color: 0x884422, w: 0.12, h: 0.04, d: 0.25, x: 0, y: 0.15, z: 0 },
+      { color: 0x884422, w: 0.35, h: 0.03, d: 0.05, x: 0, y: 0.25, z: 0 },
+    ];
+
+    const p1 = createFighter(0x22cc44, 0xffccaa, 0x884422, gokuHair, gokuAcc);
+    p1.position.set(-2.5, 0.3, 0);
+    p1.scale.set(1, 1, 1);
+    // Goku faces right (toward opponent)
+    p1.rotation.y = 0;
+    scene.add(p1);
+
+    const p2 = createFighter(0xcc2244, 0xffccaa, 0x222222, vegetaHair, vegetaAcc);
+    p2.position.set(2.5, 0.3, 0);
+    p2.scale.set(1, 1, 1);
+    // Vegeta faces left (toward opponent)
+    p2.rotation.y = 0;
+    scene.add(p2);
+
+    // ─── PROJECTILE ───
+    const projGeo = new THREE.SphereGeometry(0.15, 8, 8);
+    const projMat = new THREE.MeshToonMaterial({ color: 0x4488ff });
+    let projectiles = [];
+
+    function spawnProjectile(from, dir, color) {
+      const p = new THREE.Mesh(projGeo, new THREE.MeshToonMaterial({ color }));
+      p.position.copy(from);
+      p.position.y += 0.7;
+      p.userData = { dir, life: 60 };
+      scene.add(p);
+      projectiles.push(p);
+    }
+
+    // ─── PARTICLES ───
+    let particles = [];
+    function spawnParticles(pos, color, count) {
+      for (let i = 0; i < count; i++) {
+        const p = new THREE.Mesh(
+          new THREE.SphereGeometry(0.04, 4, 4),
+          new THREE.MeshToonMaterial({ color })
+        );
+        p.position.copy(pos);
+        p.userData = {
+          vx: (Math.random() - 0.5) * 0.1,
+          vy: Math.random() * 0.1,
+          vz: (Math.random() - 0.5) * 0.05,
+          life: 20 + Math.random() * 10
+        };
+        scene.add(p);
+        particles.push(p);
+      }
+    }
+
+    // ─── GAME STATE ───
+    const FIGHTERS = {
+      p1: {
+        pos: p1, x: -2.5, y: 0.3,
+        hp: 100, maxHp: 100,
+        energy: 100, maxEnergy: 100,
+        name: 'GOKU',
+        facing: 1, // faces right
+        state: 'idle',
+        velX: 0, velY: 0,
+        atkTimer: 0, atkType: null,
+        hitTimer: 0, blockTimer: 0,
+        combo: 0,
+        canAct: true,
+        specialCD: 0,
+      },
+      p2: {
+        pos: p2, x: 2.5, y: 0.3,
+        hp: 100, maxHp: 100,
+        energy: 100, maxEnergy: 100,
+        name: 'VEGETA',
+        facing: -1, // faces left
+        state: 'idle',
+        velX: 0, velY: 0,
+        atkTimer: 0, atkType: null,
+        hitTimer: 0, blockTimer: 0,
+        combo: 0,
+        canAct: true,
+        specialCD: 0,
+      }
+    };
+
+    let gameStarted = false;
+    let gameOver = false;
+    let roundTime = 99;
+    let roundTimer = 0;
+    let winner = null;
+    let hitPause = 0;
+
+    // ─── INPUT ───
+    const keys = {};
+    document.addEventListener('keydown', (e) => {
+      keys[e.code] = true;
+      if ((e.code === 'Space' || e.code === 'Enter') && !gameStarted && !gameOver) {
+        startGame();
+      }
+      if (e.code === 'Space') e.preventDefault();
+    });
+    document.addEventListener('keyup', (e) => {
+      keys[e.code] = false;
+    });
+
+    function startGame() {
+      gameStarted = true;
+      document.getElementById('start-screen').parentElement.style.display = 'none';
+    }
+
+    function restart() {
+      document.getElementById('ko-screen').style.display = 'none';
+      FIGHTERS.p1.hp = 100; FIGHTERS.p1.x = -2.5; FIGHTERS.p1.y = 0.3;
+      FIGHTERS.p2.hp = 100; FIGHTERS.p2.x = 2.5; FIGHTERS.p2.y = 0.3;
+      FIGHTERS.p1.energy = 100; FIGHTERS.p2.energy = 100;
+      FIGHTERS.p1.specialCD = 0; FIGHTERS.p2.specialCD = 0;
+      FIGHTERS.p1.state = 'idle'; FIGHTERS.p2.state = 'idle';
+      gameOver = false; winner = null;
+      roundTime = 99; roundTimer = 0;
+      gameStarted = true;
+      document.getElementById('start-screen').parentElement.style.display = 'none';
+      updateHUD();
+    }
+    window.restart = restart;
+
+    // ─── COMBAT ───
+    const ATTACKS = {
+      punch: { damage: 6, range: 0.7, knockback: 0.3, duration: 15, energy: 0, type: 'punch' },
+      kick: { damage: 10, range: 0.9, knockback: 0.5, duration: 20, energy: 5, type: 'kick' },
+      special: { damage: 18, range: 3.0, knockback: 0.8, duration: 30, energy: 25, type: 'special' },
+    };
+
+    function doAttack(fighter, atkName) {
+      const atk = ATTACKS[atkName];
+      if (!fighter.canAct || fighter.atkTimer > 0 || fighter.hitTimer > 0) return false;
+      if (fighter.energy < atk.energy) return false;
+      if (atkName === 'special' && fighter.specialCD > 0) return false;
+
+      fighter.energy -= atk.energy;
+      fighter.atkType = atkName;
+      fighter.atkTimer = atk.duration;
+      fighter.canAct = false;
+
+      if (atkName === 'special') {
+        fighter.specialCD = 120;
+      }
+      return true;
+    }
+
+    function checkHit(attacker, defender, atkName) {
+      const atk = ATTACKS[atkName];
+      const dx = Math.abs(attacker.x - defender.x);
+      const dy = Math.abs(attacker.y - defender.y);
+
+      if (dx > atk.range || dy > 0.6) return false;
+      if (defender.hitTimer > 0) return false;
+      if (defender.blockTimer > 0) {
+        // Block reduces damage
+        defender.hp -= Math.floor(atk.damage * 0.2);
+        defender.hitTimer = 10;
+        spawnParticles(new THREE.Vector3(defender.x, defender.y + 0.6, 0), 0x4488ff, 5);
+        return true;
+      }
+
+      defender.hp -= atk.damage;
+      defender.hitTimer = 20;
+      defender.canAct = false;
+
+      // Knockback
+      const dir = attacker.facing;
+      defender.x += dir * atk.knockback;
+      defender.velX = dir * atk.knockback * 0.5;
+
+      // Particles
+      spawnParticles(new THREE.Vector3(defender.x, defender.y + 0.6, 0), atkName === 'special' ? 0x4488ff : 0xffcc00, atkName === 'special' ? 15 : 8);
+
+      // Hit pause
+      hitPause = 3;
+
+      // Clamp position
+      clampPos(defender);
+
+      return true;
+    }
+
+    function clampPos(fighter) {
+      fighter.x = Math.max(-5.5, Math.min(5.5, fighter.x));
+    }
+
+    // ─── AI ───
+    let aiTimer = 0;
+    function updateAI() {
+      const f = FIGHTERS.p2;
+      if (f.hitTimer > 0 || !f.canAct) return;
+
+      const dx = FIGHTERS.p1.x - f.x;
+      const dist = Math.abs(dx);
+
+      aiTimer++;
+
+      // Decide action
+      if (dist < 0.8 && f.energy >= 25 && f.specialCD === 0 && aiTimer % 60 < 10) {
+        doAttack(f, 'special');
+      } else if (dist < 0.7 && aiTimer % 20 < 5) {
+        doAttack(f, 'kick');
+      } else if (dist < 0.5 && aiTimer % 10 < 3) {
+        doAttack(f, 'punch');
+      } else if (dist > 0.7 && f.hitTimer === 0) {
+        // Move toward player
+        f.x += Math.sign(dx) * 0.025;
+        clampPos(f);
+      }
+
+      // Block sometimes
+      if (dist < 0.6 && aiTimer % 40 < 15 && f.blockTimer === 0) {
+        f.blockTimer = 10;
+      }
+
+      // Random jump
+      if (aiTimer % 120 < 3 && f.velY === 0) {
+        f.velY = 0.06;
+      }
+    }
+
+    // ─── UPDATE ───
+    function update() {
+      if (!gameStarted || gameOver) return;
+      if (hitPause > 0) { hitPause--; return; }
+
+      const p1 = FIGHTERS.p1;
+      const p2 = FIGHTERS.p2;
+
+      // ── P1 Controls ──
+      if (p1.hitTimer === 0 && p1.canAct) {
+        let moveX = 0;
+        if (keys['KeyD']) moveX = 0.025;
+        if (keys['KeyA']) moveX = -0.025;
+        p1.x += moveX;
+        clampPos(p1);
+
+        if (keys['KeyW'] && p1.velY === 0) { p1.velY = 0.06; }
+
+        if (keys['KeyJ']) doAttack(p1, 'punch');
+        if (keys['KeyK']) doAttack(p1, 'kick');
+        if (keys['KeyL']) doAttack(p1, 'special');
+      }
+
+      // ── AI ──
+      updateAI();
+
+      // ── Physics ──
+      for (const f of [p1, p2]) {
+        // Gravity
+        f.velY -= 0.003;
+        f.y += f.velY;
+        if (f.y < 0.3) { f.y = 0.3; f.velY = 0; }
+        if (f.y > 1.8) { f.velY = 0.001; } // ceiling
+
+        // Decay velocity
+        f.velX *= 0.85;
+        f.x += f.velX;
+        clampPos(f);
+
+        // Timers
+        if (f.atkTimer > 0) f.atkTimer--;
+        if (f.hitTimer > 0) f.hitTimer--;
+        if (f.blockTimer > 0) f.blockTimer--;
+        if (f.specialCD > 0) f.specialCD--;
+
+        if (f.atkTimer === 0) { f.atkType = null; f.canAct = true; }
+        if (f.hitTimer === 0) { f.canAct = true; }
+
+        // Energy regen
+        if (f.energy < f.maxEnergy) f.energy += 0.15;
+      }
+
+      // ── Attack checks ──
+      if (p1.atkTimer > 0 && p1.atkType) {
+        checkHit(p1, p2, p1.atkType);
+      }
+      if (p2.atkTimer > 0 && p2.atkType) {
+        checkHit(p2, p1, p2.atkType);
+      }
+
+      // ── Projectile (special) ──
+      if (p1.atkType === 'special' && p1.atkTimer === 25) {
+        spawnProjectile(new THREE.Vector3(p1.x, p1.y, 0), 1, 0x4488ff);
+      }
+      if (p2.atkType === 'special' && p2.atkTimer === 25) {
+        spawnProjectile(new THREE.Vector3(p2.x, p2.y, 0), -1, 0xff8844);
+      }
+
+      // ── Update projectiles ──
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i];
+        const dir = p.userData.dir;
+        p.position.x += dir * 0.06;
+        p.userData.life--;
+
+        // Check hit on opponent
+        const target = dir > 0 ? p2 : p1;
+        const dx = Math.abs(p.position.x - target.x);
+        const dy = Math.abs(p.position.y - target.y);
+        if (dx < 0.5 && dy < 0.6 && target.hitTimer === 0) {
+          target.hp -= 15;
+          target.hitTimer = 20;
+          target.canAct = false;
+          target.x += dir * 0.6;
+          clampPos(target);
+          spawnParticles(p.position, 0x4488ff, 12);
+          scene.remove(p);
+          projectiles.splice(i, 1);
+          continue;
+        }
+
+        if (p.userData.life <= 0 || Math.abs(p.position.x) > 6) {
+          scene.remove(p);
+          projectiles.splice(i, 1);
+        }
+      }
+
+      // ── Update particles ──
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.position.x += p.userData.vx;
+        p.position.y += p.userData.vy;
+        p.position.z += p.userData.vz;
+        p.userData.life--;
+        if (p.userData.life <= 0) {
+          scene.remove(p);
+          particles.splice(i, 1);
+        }
+      }
+
+      // ── KO check ──
+      if (p1.hp <= 0 || p2.hp <= 0) {
+        gameOver = true;
+        winner = p1.hp > 0 ? p1 : p2;
+        showKO(winner);
+      }
+
+      // ── Timer ──
+      roundTimer++;
+      if (roundTimer >= 30) {
+        roundTimer = 0;
+        roundTime--;
+        document.getElementById('timer').textContent = roundTime;
+        if (roundTime <= 0) {
+          gameOver = true;
+          winner = p1.hp > p2.hp ? p1 : p2;
+          showKO(winner);
+        }
+      }
+
+      // ── Update visuals ──
+      updateFighterVisuals(p1);
+      updateFighterVisuals(p2);
+      updateHUD();
+    }
+
+    function updateFighterVisuals(f) {
+      const group = f.pos;
+      group.position.x = f.x;
+      group.position.y = f.y;
+
+      // Walk bob
+      if (f.atkTimer === 0 && f.hitTimer === 0 && f.state === 'idle') {
+        group.position.y += Math.sin(Date.now() * 0.005) * 0.01;
+      }
+
+      // Attack animation
+      if (f.atkTimer > 0 && f.atkType) {
+        const progress = 1 - f.atkTimer / ATTACKS[f.atkType].duration;
+        // Lean forward
+        group.rotation.z = f.facing * progress * 0.15;
+        if (f.atkType === 'punch') {
+          // Rotate front arm forward (swing from shoulder)
+          const arm = group.getObjectByName(`arm_${f.facing}`);
+          const fist = group.getObjectByName(`fist_${f.facing}`);
+          if (arm) {
+            const swing = -f.facing * progress * 0.9;
+            arm.rotation.z = swing;
+            arm.position.x = f.facing * 0.5 + f.facing * progress * 0.35;
+            // Move fist to the tip of the rotated arm
+            if (fist) {
+              const armH = 0.35;
+              const tipX = -Math.sin(swing) * armH / 2;
+              const tipY = Math.cos(swing) * armH / 2;
+              fist.position.x = arm.position.x + tipX;
+              fist.position.y = arm.position.y + tipY;
+              fist.scale.x = 1 + progress * 0.3;
+            }
+          }
+        } else if (f.atkType === 'kick') {
+          // Kick: rotate front leg forward and extend foot
+          const legIdx = f.facing;
+          const legs = group.children.filter(c => c.type === 'Mesh' && c.geometry?.parameters?.height === 0.35 && Math.abs(c.position.x) === 0.18);
+          // Find the front leg
+          for (const leg of legs) {
+            if (Math.sign(leg.position.x) === f.facing) {
+              leg.rotation.z = f.facing * progress * 1.2;
+              break;
+            }
+          }
+          // Find the front foot
+          const feet = group.children.filter(c => c.type === 'Mesh' && c.geometry?.parameters?.width === 0.12);
+          for (const foot of feet) {
+            if (Math.sign(foot.position.x) === f.facing) {
+              foot.position.x = f.facing * 0.18 + f.facing * progress * 0.35;
+              foot.position.y = -0.25 + progress * 0.15;
+              break;
+            }
+          }
+        }
+      } else if (f.hitTimer > 0) {
+        // Hit reaction
+        group.rotation.z = -f.facing * 0.2;
+        group.position.x += -f.facing * 0.02;
+      } else {
+        // Full rest pose reset
+        group.rotation.z = 0;
+        group.position.x += 0;
+        for (let side of [-1, 1]) {
+          const arm = group.getObjectByName(`arm_${side}`);
+          if (arm) {
+            arm.position.x = side * 0.5;
+            arm.rotation.z = side * 0.2;
+          }
+          const fist = group.getObjectByName(`fist_${side}`);
+          if (fist) {
+            fist.position.x = side * 0.5;
+            fist.position.y = 0.2;
+            fist.scale.x = 1;
+          }
+        }
+        // Reset legs
+        const legs = group.children.filter(c => c.type === 'Mesh' && c.geometry?.parameters?.height === 0.35 && Math.abs(c.position.x) === 0.18);
+        for (const leg of legs) {
+          leg.rotation.z = 0;
+        }
+        // Reset feet
+        const feet = group.children.filter(c => c.type === 'Mesh' && c.geometry?.parameters?.width === 0.12);
+        for (const foot of feet) {
+          foot.position.x = Math.sign(foot.position.x) * 0.18;
+          foot.position.y = -0.25;
+        }
+      }
+
+      // Both face the camera
+      const targetRotY = 0;
+      group.rotation.y += (targetRotY - group.rotation.y) * 0.1;
+
+      // Idle bob
+      if (f.atkTimer === 0 && f.hitTimer === 0) {
+        const breath = Math.sin(Date.now() * 0.003) * 0.02;
+        group.position.y += breath;
+      }
+    }
+
+    function showKO(winner) {
+      document.getElementById('ko-screen').style.display = 'flex';
+      document.getElementById('ko-title').textContent = 'K.O.!';
+      document.getElementById('ko-winner').textContent = `Winner: ${winner.name}`;
+    }
+
+    function updateHUD() {
+      const p1 = FIGHTERS.p1;
+      const p2 = FIGHTERS.p2;
+      document.getElementById('p1-health-bar').style.width = Math.max(0, (p1.hp / p1.maxHp) * 100) + '%';
+      document.getElementById('p2-health-bar').style.width = Math.max(0, (p2.hp / p2.maxHp) * 100) + '%';
+      document.getElementById('p1-energy-bar').style.width = Math.max(0, (p1.energy / p1.maxEnergy) * 100) + '%';
+      document.getElementById('p2-energy-bar').style.width = Math.max(0, (p2.energy / p2.maxEnergy) * 100) + '%';
+    }
+
+    // ─── RENDER ───
+    function animate() {
+      requestAnimationFrame(animate);
+      update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // ─── RESIZE ───
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ─── INIT HUD ───
+    updateHUD();
+
+    console.log('⚡ Anime Fighter 3D loaded!');
+    console.log('P1 (Goku): A/D=move, W=jump, J=punch, K=kick, L=special');
+    console.log('P2 (Vegeta AI): auto-controlled');
+  </script>
+</body>
+</html>

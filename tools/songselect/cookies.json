@@ -1,0 +1,173 @@
+[
+  {
+    "name": "TiPMix",
+    "value": "73.46719408995168",
+    "domain": ".songselect.ccli.com",
+    "path": "/",
+    "expires": 1778731263.113194,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "x-ms-routing-name",
+    "value": "self",
+    "domain": ".songselect.ccli.com",
+    "path": "/",
+    "expires": 1778731263.113241,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "ARRAffinity",
+    "value": "dcd352739a6fc6f5fa81019a75a74e0daddeadad270e2218bfb4ef4f456c6388",
+    "domain": ".songselect.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ARRAffinitySameSite",
+    "value": "dcd352739a6fc6f5fa81019a75a74e0daddeadad270e2218bfb4ef4f456c6388",
+    "domain": ".songselect.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": ".AspNetCore.Antiforgery.9fXoN5jHCXs",
+    "value": "CfDJ8PAo7HJbiRpFis1Gko5KHOujztkMR9mD2WTxcDnlsyGxoZLs1D2okaLX3OReE92wVFnNP5OzA37h8Iv5adl5rJv4e_TvlFpe9Bl0WzSlQb-SrcCFqzf1UI6-C-SYG2IYWdqoiUZ5GNDSPe4jSQE8oFs",
+    "domain": "songselect.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Strict"
+  },
+  {
+    "name": "cfz_zaraz-analytics",
+    "value": "%7B%22_cfa_clientId%22%3A%7B%22v%22%3A%2269736320879073890%22%2C%22e%22%3A1810263663395%7D%2C%22_cfa_sId%22%3A%7B%22v%22%3A%2210044121651225534%22%2C%22e%22%3A1778729463395%7D%7D",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1810263663.412001,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "cf_clearance",
+    "value": "GL6M4MHwxLQ7xzlv_4kcgZaG.atpwMdks0puRrI1K1c-1778727664-1.2.1.1-H8Rc.YuQ9578E4tgL3tZ_YxR7tfskOirRmip1SufJWi3zS91e.tlgLlYHKIMAGDY2RqkAqmi.dR4MJNDW.Y8oEEYpddFOMNHJIWS5IwnF7YZQFSIvg2hqoRmm45i7LfiE5jm2K0ibqzVUEjhS3KVnaYxuOWzJffl42jW_HvJaRTgvhSHHxBu6Bfw3w_WzNucGf6Oh4wNs2GQvNXLsJR1Rn81PzGW17cJHE1K8i_51k9Y02MlooigYCGNlQ8wTCL7NuXIWyyccGL2G7sXtlVGRzctEOu2kkZdpuPzxnRhJkAE2ISBOMkVDdOyeWVZGv5wG01gZ_nxrr1Hdhk8bsOYQw",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1810263664.104315,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None",
+    "partitionKey": "https://ccli.com",
+    "_crHasCrossSiteAncestor": false
+  },
+  {
+    "name": "_hjSessionUser_371779",
+    "value": "eyJpZCI6IjUxZDUyM2FlLTJlMmEtNTdlYS05MjAzLWFiNGEyZmZiYmUzZSIsImNyZWF0ZWQiOjE3Nzg3Mjc2NjQyMjMsImV4aXN0aW5nIjpmYWxzZX0=",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1810263664,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_hjSession_371779",
+    "value": "eyJpZCI6IjRhZTkzZTRlLWQ2ZWEtNGJmNS1hMGRmLTYwYzkzYjg4MDM4MCIsImMiOjE3Nzg3Mjc2NjQyMjMsInMiOjAsInIiOjAsInNiIjowLCJzciI6MCwic2UiOjAsImZzIjoxLCJzcCI6MH0=",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1778729464,
+    "httpOnly": false,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_clck",
+    "value": "qk68si%5E2%5Eg61%5E0%5E2325",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1810263664,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "_clsk",
+    "value": "cb3wth%5E1778727664576%5E1%5E1%5En.clarity.ms%2Fcollect",
+    "domain": ".ccli.com",
+    "path": "/",
+    "expires": 1778814064,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "culture",
+    "value": "en-US",
+    "domain": "profile.ccli.com",
+    "path": "/",
+    "expires": 1810263665.142946,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": ".AspNetCore.Antiforgery.cdV5uW_Ejgc",
+    "value": "CfDJ8D4DJ_HLlxRLsOwhFO-xCOJeceNx-Wl7w586xxFmlTVY1DkSc8LbOXqSOxI82llmKDBVf0gyiDjXZPOWQ6VtlY7tZGxWGL3u9-p0iAU4BUOZdqEqmK_hgbMRZyBpN4HplwF755xNKVPB7p9IoA9mZ98",
+    "domain": "profile.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": false,
+    "sameSite": "Strict"
+  },
+  {
+    "name": ".AspNetCore.Session",
+    "value": "CfDJ8D4DJ%2FHLlxRLsOwhFO%2BxCOKFEi%2F9esrfLWuU6yenQ3E4RZMan6YHdW8%2BMQg3w2xanb6IYrK5nNSRmc8Me%2FyfH2wdFfUW5c4%2FWCBlmONBObVCjyUPS9C3ltxxB9ZHFNRVwG7ywdUzSXcyyCzZEbRIqrtpJWxNWLoUfcWsVFbBii04",
+    "domain": "profile.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ARRAffinity",
+    "value": "2b1b272b3a3c6bd3eb4e2db073f44ea75a5b89a412a706f9e954593c51a9bb15",
+    "domain": ".profile.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "ARRAffinitySameSite",
+    "value": "2b1b272b3a3c6bd3eb4e2db073f44ea75a5b89a412a706f9e954593c51a9bb15",
+    "domain": ".profile.ccli.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "CCLI_JWT_AUTH",
+    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJQZXJzb25JZCI6IjhiMzZkYTg0LThjOTYtNDYxOC04ZDA2LTM1YjIxYjE0ODM2MiIsIk9yZ2FuaXphdGlvbklkIjoiZTRlNmY0NmUtZGZkYy1lNTExLTlmNTItMDAwYzI5ODcyODMxIiwiT3JnYW5pemF0aW9uTmFtZSI6IlRoZSBQSUVSIiwiQXV0aFRva2VuIjoiNzUxNzQzNDYtNDYyYy00MjYxLTgzMzItMTNiOGY5MjU2NjhkIiwiUGVyc2lzdExvZ2luIjoiVHJ1ZSIsImV4cCI6MTc3OTkzOTQ3NiwiaXNzIjoicHJvZmlsZS5jY2xpLmNvbSIsImF1ZCI6Ii5jY2xpLmNvbSJ9.Z-_a--a2o5trQ9-079NsfAW2QOIL5ZOd4hqC76IkoOM",
+    "domain": ".ccli.com",
+    "path": "/",
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "None"
+  }
+]

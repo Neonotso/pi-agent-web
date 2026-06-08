@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <!-- Glow filter for neon effect -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Gradient for V -->
+    <linearGradient id="vGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7B2FFF;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#9B59FF;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#00FF88;stop-opacity:1"/>
+    </linearGradient>
+    
+    <!-- Gradient for A -->
+    <linearGradient id="aGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00FF88;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7B2FFF;stop-opacity:1"/>
+    </linearGradient>
+    
+    <!-- Gradient for Y -->
+    <linearGradient id="yGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00FF88;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#7B2FFF;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#00CC66;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="120" fill="#0A0A1A"/>
+  
+  <!-- V - main stroke with overhang -->
+  <path d="M 30 25 L 75 100 L 110 25" 
+        fill="none" 
+        stroke="url(#vGrad)" 
+        stroke-width="8" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)"/>
+  
+  <!-- V - right stroke extends up and over -->
+  <path d="M 110 25 Q 115 10 130 8 Q 150 5 165 10 Q 175 15 178 28" 
+        fill="none" 
+        stroke="url(#vGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round"
+        filter="url(#glow)"/>
+  
+  <!-- A - clean geometric -->
+  <path d="M 200 100 L 235 25 L 270 100 M 215 75 L 255 75" 
+        fill="none" 
+        stroke="url(#aGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)"/>
+  
+  <!-- Y - right stroke going down-right -->
+  <path d="M 330 25 L 350 65" 
+        fill="none" 
+        stroke="url(#yGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round"
+        filter="url(#glow)"/>
+  
+  <!-- Y - left stroke going down-left -->
+  <path d="M 330 25 L 310 65" 
+        fill="none" 
+        stroke="url(#yGrad)" 
+        stroke-width="7" 
+        stroke-linecap="round"
+        filter="url(#glow)"/>
+  
+  <!-- Y - extended tail curving down-left -->
+  <path d="M 330 65 Q 335 85 330 95 Q 315 108 300 112" 
+        fill="none" 
+        stroke="url(#yGrad)" 
+        stroke-width="6" 
+        stroke-linecap="round"
+        filter="url(#glow)"/>
+</svg>

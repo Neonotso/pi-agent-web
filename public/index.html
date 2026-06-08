@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg?t=" + Date.now() />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>π Agent</title>
+    <link rel="manifest" href="/manifest.json" />
+    <script type="module" crossorigin src="/assets/index-bUrApfZ8.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Dmtsi6MP.css">
+  </head>
+  <body class="bg-slate-950 text-slate-100 overscroll-none">
+    <div id="root" class="h-full w-screen overflow-hidden"></div>
+    <script>
+      const isDevHost =
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname.endsWith('.ts.net');
+
+      if ('serviceWorker' in navigator) {
+        if (isDevHost) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => registration.unregister());
+          });
+          if ('caches' in window) {
+            caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+          }
+        } else if (location.search.includes('enable-sw=1')) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then((reg) => {
+              console.log('[SW] Registered:', reg.scope);
+            });
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

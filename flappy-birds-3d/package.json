@@ -1,0 +1,12 @@
+{
+  "name": "flappy-birds-3d",
+  "version": "1.0.0",
+  "description": "A 3D Flappy Birds game using Three.js",
+  "main": "index.html",
+  "scripts": {
+    "start": "open index.html"
+  },
+  "keywords": ["3d", "game", "flappy-birds", "threejs"],
+  "author": "Ryan Vegh",
+  "license": "MIT"
+}

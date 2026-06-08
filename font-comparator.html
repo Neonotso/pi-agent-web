@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAY Font Comparator</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0A0A1A;
+    color: #E0E0E0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+  
+  #text-input {
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 24px;
+    background: #151530;
+    border: 2px solid #7B2FFF;
+    border-radius: 8px;
+    color: #E0E0E0;
+    margin-bottom: 30px;
+    outline: none;
+  }
+  #text-input::placeholder { color: #555; }
+  #text-input:focus { border-color: #00FF88; }
+  
+  #fonts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 0 20px;
+  }
+  
+  .font-card {
+    background: #151530;
+    border: 1px solid #252550;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .font-card:hover { border-color: #7B2FFF; }
+  .font-card.selected { border-color: #00FF88; background: #1a1a35; }
+  
+  .font-name {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  
+  .font-preview {
+    font-size: 36px;
+    line-height: 1.4;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+
+<h1>Font Comparator</h1>
+
+<input type="text" id="text-input" placeholder="Type text to preview in all fonts..." value="VAY">
+
+<div id="fonts-grid"></div>
+
+<script>
+// All installed fonts with CORRECT family names
+const fontConfig = [
+  { name: 'Openspace Thin', family: 'Openspace Thin', size: 48 },
+  { name: 'Openspace Regular', family: 'Openspace', size: 48 },
+  { name: 'Openspace Bold', family: 'Openspace Bold', size: 48 },
+  { name: 'Openspace Black', family: 'Openspace Black', size: 48 },
+  { name: 'Openspace Line', family: 'Openspace Line', size: 48 },
+  { name: 'Otomanopee One', family: 'Otomanopee One', size: 48 },
+  { name: 'Hattori Hanzo', family: 'Hattori Hanzo', size: 48 },
+  { name: 'Victory', family: 'Victory', size: 48 },
+  { name: 'Groutpix Flow Alien', family: 'Groutpix Flow Alien', size: 48 },
+  { name: 'Tokyo', family: 'Tokyo', size: 48 },
+  { name: 'Destroyed Bold', family: 'DESTROYED', size: 48 },
+  { name: 'High Trash', family: 'High Trash', size: 48 },
+  { name: 'Border Wall', family: 'Border Wall', size: 48 },
+  { name: 'Disputed Housing', family: 'Disputed Housing', size: 48 },
+  { name: 'Monkey Area', family: 'Monkey Area', size: 36 },
+  { name: "Heavenezer's Unown", family: "Heavenezer's Unown", size: 36 },
+  { name: 'Rocket Brush', family: 'Rocket Brush', size: 36 },
+  { name: 'Mayonice', family: 'Mayonice', size: 36 },
+  { name: 'Kindred', family: 'KINDRED', size: 36 },
+  { name: 'Stella', family: 'STELLA', size: 36 },
+  { name: 'Jolîe', family: 'JOLIÈ', size: 36 },
+  { name: 'Smart Duck', family: 'Smart Duck', size: 36 },
+  { name: 'Codex', family: 'CODEX', size: 36 },
+  { name: 'Cherry', family: 'CHERRY', size: 36 },
+  { name: 'Tokyo', family: 'Tokyo', size: 36 },
+  { name: 'Verona', family: 'Verona', size: 36 },
+  { name: 'Unsightly', family: 'Unsightly', size: 36 },
+  { name: 'Prox Yo', family: 'Prox Yo', size: 36 },
+  { name: 'Sekaiwo', family: 'Sekaiwo', size: 36 },
+  { name: 'Yourmate', family: 'Yourmate', size: 36 },
+  { name: 'Kurohe', family: 'Kurohe', size: 36 },
+  { name: 'Maragsa', family: 'Maragsa', size: 36 },
+  { name: 'Belagak', family: 'Belagak', size: 36 },
+  { name: 'Bedaone', family: 'Bedaone', size: 36 },
+  { name: 'Bright Nova', family: 'BRIGHT-NOVA', size: 36 },
+  { name: 'Dariodaro', family: 'Dariodaro', size: 36 },
+  { name: 'Demiholy', family: 'Demiholy', size: 36 },
+  { name: 'English To Manakahthey', family: 'English To Manakahthey', size: 36 },
+  { name: 'Hajimari Gothic', family: 'HajimariGothic', size: 36 },
+  { name: 'Ink Consisten', family: 'Ink Consisten', size: 36 },
+  { name: 'Regina', family: 'Regina', size: 36 },
+  { name: 'Sahuraya Demo', family: 'Sahuraya Demo', size: 36 },
+  { name: 'Terneuzen', family: 'Terneuzen', size: 36 },
+  { name: 'Waveform', family: 'Waveform', size: 36 },
+  { name: 'Wildyrus', family: 'Wildyrus', size: 36 },
+  { name: 'Royalty Free', family: 'Royalty Free', size: 36 },
+  { name: 'Ramadhan Mubarokan', family: 'Ramadhan Mubarokan', size: 36 },
+  { name: 'Costaline Thin', family: 'Costaline Thin', size: 36 },
+  { name: 'Prox Yo Italic', family: 'Prox Yo', size: 36 },
+  { name: 'Stella Italic', family: 'STELLA', size: 36 },
+  { name: 'Codex Italic', family: 'CODEX', size: 36 },
+  { name: 'Verona Oblique', family: 'Verona', size: 36 },
+  { name: 'Et Providencia', family: 'ET Providencia', size: 36 },
+  { name: 'Merivale Rounded', family: 'Merivale Rounded Demo', size: 36 },
+  { name: 'Quicksand', family: 'Quicksand', size: 36 },
+  { name: 'Kaushan Script', family: 'Kaushan Script', size: 36 },
+  { name: 'Play', family: 'Play', size: 36 },
+];
+
+const grid = document.getElementById('fonts-grid');
+const input = document.getElementById('text-input');
+
+function renderFonts() {
+  const text = input.value || 'VAY';
+  grid.innerHTML = '';
+  
+  fontConfig.forEach((font, i) => {
+    const card = document.createElement('div');
+    card.className = 'font-card';
+    card.innerHTML = `
+      <div class="font-name">${font.name}</div>
+      <div class="font-preview" style="font-family: '${font.family}', sans-serif; font-size: ${font.size}px;">${text}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+input.addEventListener('input', renderFonts);
+renderFonts();
+</script>
+
+</body>
+</html>
